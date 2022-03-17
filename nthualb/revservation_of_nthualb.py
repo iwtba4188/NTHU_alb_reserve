@@ -13,6 +13,8 @@ import sys
 
 DRIVER_TYPE = "Edge"  # Chrome or Edge
 WAITING_TIME = 0.5
+ENTER_DATE = datetime.datetime.now()
+TOMORROW_DATE = (ENTER_DATE + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
 
 with open("setting.txt", "r") as file:
@@ -30,7 +32,7 @@ with open("setting.txt", "r") as file:
     TARGET_DATE = datas[4]
 
 
-def log(log_message, time_limit=True):
+def log(log_message, time_limit=False):
     if time_limit:
         time.sleep(0.1)
     now_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -54,6 +56,7 @@ def crawling():
     log("enter the website to login")
     nthualb.get("https://oauth.ccxp.nthu.edu.tw/v1.1/authorize.php?client_id=nthualb&response_type=code")
 
+    WebDriverWait(nthualb, 10).until(EC.presence_of_element_located((By.ID, "id")))
     log("get account_blank")
     account_blank = nthualb.find_element_by_id("id")
     log("send account_blank")
@@ -71,31 +74,37 @@ def crawling():
     log("enter the website to last day")
     nthualb.get("https://nthualb.url.tw/reservation/reservation?d=4")
 
+    WebDriverWait(nthualb, 10).until(EC.presence_of_element_located(
+        (By.XPATH, "/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[1]/tbody/tr/td[5]/div[2]")))
     log("get last_date")
     last_date = nthualb.find_element_by_xpath("/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[1]/tbody/tr/td[5]/div[2]").text
+
     log("waiting for 00:00")
-    while (datetime.datetime.now().strftime("%Y-%m-%d") != TARGET_DATE):
-        log("waiting for target_date")
+    count = 0
+    while (datetime.datetime.now().strftime("%Y-%m-%d") != TOMORROW_DATE):
+        count += 1
+        if (count % 2000000 == 0):
+            log("waiting for target_date")
     while (last_date != TARGET_DATE):
-        log("target_date not found", False)
-        log(f"sleep for {WAITING_TIME} secs then refresh", False)
+        log("target_date not found")
+        log(f"sleep for {WAITING_TIME} secs then refresh")
         time.sleep(WAITING_TIME)
-        log("refresh the website", False)
+        log("refresh the website")
         nthualb.refresh()
-        log("refresh last_date", False)
+        log("refresh last_date")
         last_date = nthualb.find_element_by_xpath(
             "/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[1]/tbody/tr/td[5]/div[2]").text
 
-    log("target_date found!", False)
+    log("target_date found!")
 
-    log("select rows", False)
+    log("select rows")
     WebDriverWait(nthualb, 10).until(EC.presence_of_element_located(
         (By.XPATH, "/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[2]/tbody/tr")))
     select_table = nthualb.find_elements_by_xpath("/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[2]/tbody/tr")
     select_table.pop()
-    log("select col and select the button", False)
+    log("select col and select the button")
     place_button1 = select_table[TIME1].find_elements_by_tag_name("td")[HORI1].find_element_by_tag_name("div")
-    log("click the button", False)
+    log("click the button")
     place_button1.click()
 
     log("wait for alert appear")
@@ -110,6 +119,8 @@ def crawling():
     log("reget the website")
     nthualb.get("https://nthualb.url.tw/reservation/reservation?d=4")
     log("select rows")
+    WebDriverWait(nthualb, 10).until(EC.presence_of_element_located(
+        (By.XPATH, "/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[2]/tbody/tr")))
     select_table = nthualb.find_elements_by_xpath("/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[2]/tbody/tr")
     select_table.pop()
     log("select col and select the button")
@@ -128,6 +139,9 @@ def crawling():
 
     for i in range(0, 20):
         log("crawling success!!!!!!")
+
+    log("Press any key to close the webdriver")
+    os.system("pause")
 
     log("close the webdriver")
     nthualb.close()
