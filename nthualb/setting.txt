@@ -1,5 +1,0 @@
-student id (帳號)
-password (密碼)
-court1 (場一)
-court2 (場二)
-date YYYY-MM-DD (日期YYYY-MM-DD)
