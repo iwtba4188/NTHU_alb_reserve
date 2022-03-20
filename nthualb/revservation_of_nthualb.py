@@ -1,35 +1,36 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+from selenium.webdriver.edge.options import Options as EdgeOptions
 
 import datetime
 import time
 import os
 import sys
+import json
 
 
-DRIVER_TYPE = "Edge"  # Chrome or Edge
 WAITING_TIME = 0.5
 ENTER_DATE = datetime.datetime.now()
 TOMORROW_DATE = (ENTER_DATE + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
 
-with open("setting.txt", "r") as file:
-    datas = file.readlines()
-    ID = datas[0]
-    PASSWORD = datas[1]
-    SELECT_VALUE1 = datas[2]
-    SELECT_VALUE2 = datas[3]
+with open("setting.json", "r") as json_file:
+    datas = json.load(json_file)
+    ID = datas["id"] + '\t'
+    PASSWORD = datas["password"]
 
-    HORI1 = int(SELECT_VALUE1[0])
-    TIME1 = int(SELECT_VALUE1[1:])+1
-    HORI2 = int(SELECT_VALUE2[0])
-    TIME2 = int(SELECT_VALUE2[1:])+1
+    PLACE1 = int(datas["place1"])
+    TIME1 = int(datas["time1"])+1
+    PLACE2 = int(datas["place2"])
+    TIME2 = int(datas["time2"])+1
 
-    TARGET_DATE = datas[4]
+    TARGET_DATE = datas["target_date"]
+    DRIVER_TYPE = datas["driver_type"]  # Chrome or Edge
 
 
 def log(log_message, time_limit=False):
@@ -43,10 +44,16 @@ def log(log_message, time_limit=False):
 
 def crawling():
     log("open the webdriver")
-    if (DRIVER_TYPE == "Edge"):
-        nthualb = webdriver.Edge(EdgeChromiumDriverManager().install())
-    elif (DRIVER_TYPE == "Chrome"):
-        nthualb = webdriver.Chrome(ChromeDriverManager().install())
+    if (DRIVER_TYPE == "edge"):
+        log("setting options (NTHU_OAuth_Decaptcha.crx)")
+        edge_options = EdgeOptions()
+        edge_options.add_extension("NTHU_OAuth_Decaptcha.crx")
+        nthualb = webdriver.Edge(EdgeChromiumDriverManager().install(), options=edge_options)
+    elif (DRIVER_TYPE == "chrome"):
+        log("setting options (NTHU_OAuth_Decaptcha.crx)")
+        chrome_options = ChromeOptions()
+        chrome_options.add_extension("NTHU_OAuth_Decaptcha.crx")
+        nthualb = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
     else:
         sys.stderr.write("Unknow driver type")
         sys.exit(1)
@@ -56,20 +63,19 @@ def crawling():
     log("enter the website to login")
     nthualb.get("https://oauth.ccxp.nthu.edu.tw/v1.1/authorize.php?client_id=nthualb&response_type=code")
 
+    log("waiting for website done")
     WebDriverWait(nthualb, 10).until(EC.presence_of_element_located((By.ID, "id")))
+    log("waiting for the extension work (10 secs)")
+    time.sleep(10)
     log("get account_blank")
     account_blank = nthualb.find_element_by_id("id")
     log("send account_blank")
     account_blank.send_keys(ID + PASSWORD)
 
-    log("get captcha_blank")
-    captcha_blank = nthualb.find_element_by_id("captcha_code")
-    log("click captcha_blank")
-    captcha_blank.click()
-
-    # modify to "press any key to continue"
-    log("Already login?")
-    os.system("pause")
+    log("get login_button")
+    login_button = nthualb.find_element_by_class_name("btn-login")
+    log("click login_button")
+    login_button.click()
 
     log("enter the website to last day")
     nthualb.get("https://nthualb.url.tw/reservation/reservation?d=4")
@@ -85,6 +91,7 @@ def crawling():
         count += 1
         if (count % 2000000 == 0):
             log("waiting for target_date")
+            count = 0
     while (last_date != TARGET_DATE):
         log("target_date not found")
         log(f"sleep for {WAITING_TIME} secs then refresh")
@@ -103,7 +110,7 @@ def crawling():
     select_table = nthualb.find_elements_by_xpath("/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[2]/tbody/tr")
     select_table.pop()
     log("select col and select the button")
-    place_button1 = select_table[TIME1].find_elements_by_tag_name("td")[HORI1].find_element_by_tag_name("div")
+    place_button1 = select_table[TIME1].find_elements_by_tag_name("td")[PLACE1].find_element_by_tag_name("div")
     log("click the button")
     place_button1.click()
 
@@ -124,7 +131,7 @@ def crawling():
     select_table = nthualb.find_elements_by_xpath("/html/body/table/tbody/tr[3]/td/table/tbody/tr/td/table/tbody/tr[2]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/table[2]/tbody/tr")
     select_table.pop()
     log("select col and select the button")
-    place_button2 = select_table[TIME2].find_elements_by_tag_name("td")[HORI2].find_element_by_tag_name("div")
+    place_button2 = select_table[TIME2].find_elements_by_tag_name("td")[PLACE2].find_element_by_tag_name("div")
     log("click the button")
     place_button2.click()
 
