@@ -123,7 +123,9 @@ def crawling():
     log("click accept in alert")
     nthualb.switch_to.alert.accept()
 
-    log("reget the website")
+    time.sleep(WAITING_TIME)
+
+    log("re-get the website")
     nthualb.get("https://nthualb.url.tw/reservation/reservation?d=4")
     log("select rows")
     WebDriverWait(nthualb, 10).until(EC.presence_of_element_located(
