@@ -2,11 +2,14 @@ import sys
 import json
 import datetime
 
+from colorama import init, Fore, Back, Style
 from bs4 import BeautifulSoup
 import requests
 
 from L_util import *
 
+# colorama init
+init(convert=True)
 
 TODAY = (
     int(datetime.datetime.now().strftime("%Y")),
@@ -22,7 +25,7 @@ try:
         post_header = raw_header["post_header"]
         get_header = raw_header["get_header"]
 except FileNotFoundError:
-    sys.stderr.write("\"header.json\" not found, please add it and try again.")
+    sys.stderr.write("\"header.json\" not found, please add it and try again.\n")
 except Exception as err:
     sys.stderr.write(f"Unexpected Error. \nErr: {err}\n")
 
@@ -30,7 +33,7 @@ try:
     with open("settings.json") as setting_file:
         setting = json.load(setting_file)
 except FileNotFoundError:
-    sys.stderr.write("\"header.json\" not found, please add it and try again.\n")
+    sys.stderr.write("\"setting.json\" not found, please add it and try again.\n")
 except Exception as err:
     sys.stderr.write(f"Unexpected Error. \nErr: {err}\n")
 
@@ -79,7 +82,13 @@ for info in [(TIME1, FIELD1), (TIME2, FIELD2)]:
     raw_data = requests.post(url=url, headers=post_header, json=data)
     html_data = BeautifulSoup(raw_data.text, "html.parser")
 
-    if raw_data.status_code == 200 and html_data == "ok":
-        log(f"reserved {data} successfully, see more detail in nthualb website")
+    if raw_data.status_code == 200 and str(html_data) == "ok":
+        log(f"reserved {data} {Fore.GREEN+Style.BRIGHT}successfully{Fore.RESET+Style.RESET_ALL}, see more detail in nthualb website.")
+    elif str(html_data) == None:
+        log(f"reserved {data} {Fore.RED+Style.BRIGHT}FAIL{Fore.RESET+Style.RESET_ALL}. \
+            Because {Fore.RED+Style.BRIGHT}the session isn't work (i.e. you didn't login successfully){Fore.RESET+Style.RESET_ALL}.")
     else:
-        log(f"reserved {data} FAIL. Because {html_data}")
+        log(f"reserved {data} {Fore.RED+Style.BRIGHT}FAIL{Fore.RESET+Style.RESET_ALL}. Because {Fore.RED+Style.BRIGHT}{html_data}{Fore.RESET+Style.RESET_ALL}.")
+
+log(f"{Style.BRIGHT}FIN{Style.RESET_ALL}")
+input("input any value to exit...")
