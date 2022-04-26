@@ -23,6 +23,8 @@ def crawling_PHPSESSID(ID, PASSWORD):
     log("open the webdriver")
     log("setting options (NTHU_OAuth_Decaptcha.crx)")
     chrome_options = ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
     chrome_options.add_extension("NTHU_OAuth_Decaptcha.crx")
     nthualb = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 

@@ -35,7 +35,7 @@ except Exception as err:
     sys.stderr.write(f"Unexpected Error. \nErr: {err}\n")
 
 try:
-    ID = int(setting["id"]) + '\t'
+    ID = setting["id"] + '\t'
     PASSWORD = setting["password"]
 
     PHPSESSID = crawling_PHPSESSID(ID, PASSWORD)
