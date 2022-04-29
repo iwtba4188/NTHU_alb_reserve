@@ -1,2 +1,0 @@
-python revservation_of_nthualb.py
-pause

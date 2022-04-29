@@ -1,8 +1,0 @@
-{
-    "id": "your_id",
-    "password": "your_psw",
-    "time1": "int",
-    "field1": "int",
-    "time2": "int",
-    "field2": "int"
-}
