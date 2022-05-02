@@ -1,4 +1,4 @@
-# Reservation_of_NTHUalb
+# NTHU_alb_reserve
 
 ## Getting Start
 Download the exe file [here](https://github.com/iwtba4188/reservation_of_nthualb/releases/tag/v2.0).
