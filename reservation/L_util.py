@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 
@@ -38,15 +38,18 @@ def crawling_PHPSESSID(ID, PASSWORD):
     # chrome_options.add_argument('--headless')
     # chrome_options.add_argument('--disable-gpu')
     chrome_options.add_extension("NTHU_OAuth_Decaptcha.crx")
-    nthualb = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    nthualb = webdriver.Chrome(service=Service(
+        EdgeChromiumDriverManager().install()), options=chrome_options)
 
     log("set implicitly waitting time as 10 secs")
     nthualb.implicitly_wait(10)
     log("enter the website to login")
-    nthualb.get("https://oauth.ccxp.nthu.edu.tw/v1.1/authorize.php?client_id=nthualb&response_type=code")
+    nthualb.get(
+        "https://oauth.ccxp.nthu.edu.tw/v1.1/authorize.php?client_id=nthualb&response_type=code")
 
     log("waiting for website done")
-    WebDriverWait(nthualb, 10).until(EC.presence_of_element_located((By.ID, "id")))
+    WebDriverWait(nthualb, 10).until(
+        EC.presence_of_element_located((By.ID, "id")))
     log("waiting for the extension work (5 secs)")
     time.sleep(5)
     log("get account_blank")
